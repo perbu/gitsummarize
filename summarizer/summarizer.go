@@ -17,7 +17,7 @@ func Summarize(apiKey, commitMessages, diffs string) (string, error) {
 	}
 	defer client.Close()
 
-	model := client.GenerativeModel("gemini-1.5-flash")
+	model := client.GenerativeModel("gemini-2.5-flash")
 	prompt := fmt.Sprintf("Summarize the following git commits and their diffs in a single sentence, from the perspective of a tech lead reporting to management:\n\nCommits:\n%s\n\nDiffs:\n%s", commitMessages, diffs)
 	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {

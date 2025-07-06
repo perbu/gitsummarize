@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 
 	"gitsummerize/git"
 	"gitsummerize/report"
@@ -12,7 +13,7 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	slog.SetDefault(logger)
 
 	geminiAPIKey := flag.String("gemini-api-key", "", "Google Gemini API key")
@@ -46,20 +47,24 @@ func main() {
 	}
 
 	dailySummaries := report.AggregateByDay(commits)
+	slog.Info("generated daily summaries", "count", len(dailySummaries))
 
 	for i := range dailySummaries {
+		slog.Debug("generating summary", "date", dailySummaries[i].Date)
 		var commitMessages []string
 		var diffs []string
 		for _, commit := range dailySummaries[i].Commits {
 			commitMessages = append(commitMessages, commit.Message)
 			diffs = append(diffs, commit.Diff)
 		}
-
+		t0 := time.Now()
 		summary, err := summarizer.Summarize(apiKey, strings.Join(commitMessages, "\n"), strings.Join(diffs, "\n"))
 		if err != nil {
 			slog.Error("failed to generate summary", "err", err)
 			continue
+
 		}
+		slog.Debug("generated summary", "duration", time.Since(t0))
 		dailySummaries[i].Summary = summary
 	}
 
