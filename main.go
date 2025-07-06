@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"time"
 
 	"gitsummerize/git"
 	"gitsummerize/report"
@@ -13,10 +12,12 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	slog.SetDefault(logger)
 
 	geminiAPIKey := flag.String("gemini-api-key", "", "Google Gemini API key")
+	useOllama := flag.Bool("use-ollama", false, "Use Ollama for summarization")
+	ollamaModel := flag.String("ollama-model", "qwen3:14b", "Ollama model to use 
 	repoPath := flag.String("repo", ".", "path to the git repository")
 	startDate := flag.String("start-date", "", "optional start date in YYYY-MM-DD format")
 	endDate := flag.String("end-date", "", "optional end date in YYYY-MM-DD format")
@@ -28,17 +29,24 @@ func main() {
 		"startDate", *startDate,
 		"endDate", *endDate,
 		"author", *author,
+"au
 	)
 
 	apiKey := os.Getenv("GEMINI_API_KEY")
+	var summarizerClient summarizer.Summarizer
+	if *useOllama {
+		summarizerClient = summarizer.NewOllamaSummarizer(*ollamaModel)
+	} else {
+		apiKey := os.Getenv("GEMINI_API_KEY")
+		if apiKey == "" {
+			apiKey = *geminiAPIKey
+		}
 	if apiKey == "" {
-		apiKey = *geminiAPIKey
-	}
-
-	if apiKey == "" {
-		slog.Error("Gemini API key is required. Set it with the GEMINI_API_KEY environment variable or the --gemini-api-key flag.")
-		os.Exit(1)
-	}
+		if apiKey == "" {
+			slog.Error("Gemini API key is required. Set it with the GEMINI_API_KEY environment variable or the --gemini-api-key flag.")
+			os.Exit(1)
+		}
+		summarizerClient = summarizer.NewGeminiSummarizer(apiKey)
 
 	commits, err := git.GetCommits(*repoPath, *author, *startDate, *endDate)
 	if err != nil {
@@ -48,24 +56,20 @@ func main() {
 
 	dailySummaries := report.AggregateByDay(commits)
 	slog.Info("generated daily summaries", "count", len(dailySummaries))
-
 	for i := range dailySummaries {
 		slog.Debug("generating summary", "date", dailySummaries[i].Date)
-		var commitMessages []string
 		var diffs []string
 		for _, commit := range dailySummaries[i].Commits {
 			commitMessages = append(commitMessages, commit.Message)
 			diffs = append(diffs, commit.Diff)
 		}
 		t0 := time.Now()
-		summary, err := summarizer.Summarize(apiKey, strings.Join(commitMessages, "\n"), strings.Join(diffs, "\n"))
-		if err != nil {
+
+		summary, err := summarizerClient.Summarize(strings.Join(commitMessages, "\n"), strings.Join(diffs, "\n"))
 			slog.Error("failed to generate summary", "err", err)
 			continue
 
-		}
-		slog.Debug("generated summary", "duration", time.Since(t0))
-		dailySummaries[i].Summary = summary
+		slog.Debug("generated summary", "duration", time.Since(t0).String())
 	}
 
 	report.CalculateEffort(dailySummaries)

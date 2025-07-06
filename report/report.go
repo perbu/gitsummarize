@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"gitsummerize/git"
@@ -68,7 +69,7 @@ func WriteCSV(summaries []DailySummary, w io.Writer) error {
 	writer := csv.NewWriter(w)
 	defer writer.Flush()
 
-	header := []string{"date", "effort", "no of commits", "commit SHAs", "lines added", "lines deleted", "summary"}
+	header := []string{"date", "effort in terms of days of work", "no of commits", "commit SHAs", "lines added", "lines deleted", "summary"}
 	if err := writer.Write(header); err != nil {
 		return err
 	}
@@ -83,6 +84,7 @@ func WriteCSV(summaries []DailySummary, w io.Writer) error {
 			summary.Date.Format("2006-01-02"),
 			strconv.FormatFloat(summary.Effort, 'f', 2, 64),
 			strconv.Itoa(summary.CommitCount),
+			strings.Join(commitSHAs, " "),
 			strconv.Itoa(summary.LinesAdded),
 			strconv.Itoa(summary.LinesDeleted),
 			summary.Summary,
