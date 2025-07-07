@@ -1,4 +1,4 @@
-Copyright 2009 Per Buer.
+Copyright 2025 Per Buer.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
