@@ -2,6 +2,7 @@ package git
 
 import (
 	"bytes"
+	"sort" // Import the sort package
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -95,6 +96,11 @@ func GetCommits(repoPath, author, startDate, endDate string) ([]Commit, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Sort the commits by date in descending order (newest first)
+	sort.Slice(commits, func(i, j int) bool {
+		return commits[i].Date.After(commits[j].Date)
+	})
 
 	return commits, nil
 }
