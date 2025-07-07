@@ -12,7 +12,7 @@
 
 ## Installation
 
-To build `gitsummarize` from source, you need Go installed (version 1.18 or higher).
+To build `gitsummarize` from source, you need Go installed (version 1.24 or higher).
 
 ```bash
 git clone https://github.com/perbu/gitsummarize.git
@@ -30,9 +30,10 @@ This will create an executable named `gitsummarize` in the current directory.
 
 ### Flags
 
+*   `--summarize`: Enable summarization.
+*   `--model string`: The model to use for summarization (e.g., `gemini-1.5-flash`, `llama3`). If the model name starts with `gemini`, the Gemini API will be used. Otherwise, a local Ollama instance will be used.
+*   `--batched`: Use batched Ollama for summarization. This is only applicable when using Ollama.
 *   `--gemini-api-key string`: Your Google Gemini API key. Can also be set via the `GEMINI_API_KEY` environment variable.
-*   `--use-ollama`: Use Ollama for summarization instead of Gemini.
-*   `--ollama-model string`: The Ollama model to use (default: `qwen3:14b`). Only applicable when `--use-ollama` is set.
 *   `--repo string`: Path to the git repository (default: `.` - current directory).
 *   `--start-date string`: Optional start date in `YYYY-MM-DD` format to filter commits.
 *   `--end-date string`: Optional end date in `YYYY-MM-DD` format to filter commits.
@@ -43,19 +44,19 @@ This will create an executable named `gitsummarize` in the current directory.
 **Summarize commits in the current repository using Gemini:**
 
 ```bash
-./gitsummarize --gemini-api-key YOUR_GEMINI_API_KEY
+./gitsummarize --summarize --model gemini-1.5-flash --gemini-api-key YOUR_GEMINI_API_KEY
 ```
 
 **Summarize commits in a specific repository using Ollama:**
 
 ```bash
-./gitsummarize --repo /path/to/your/repo --use-ollama --ollama-model llama3
+./gitsummarize --summarize --repo /path/to/your/repo --model llama3
 ```
 
-**Summarize commits by a specific author within a date range:**
+**Summarize commits by a specific author within a date range using batched Ollama:**
 
 ```bash
-./gitsummarize --gemini-api-key YOUR_GEMINI_API_KEY --repo /path/to/your/repo --author "john.doe@example.com" --start-date "2024-01-01" --end-date "2024-01-31"
+./gitsummarize --summarize --repo /path/to/your/repo --author "john.doe@example.com" --start-date "2024-01-01" --end-date "2024-01-31" --model llama3 --batched
 ```
 
 ## Output
@@ -73,7 +74,7 @@ The tool outputs a CSV report to standard output (stdout) with the following col
 You can redirect the output to a file:
 
 ```bash
-./gitsummarize --gemini-api-key YOUR_GEMINI_API_KEY > daily_report.csv
+./gitsummarize --summarize --gemini-api-key YOUR_GEMINI_API_KEY > daily_report.csv
 ```
 
 ## Configuration
