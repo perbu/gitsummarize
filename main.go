@@ -16,10 +16,11 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	slog.SetDefault(logger)
 
+	summarize := flag.Bool("summarize", false, "Enable summarization")
+	model := flag.String("model", "gemini-1.5-flash", "Model to use for summarization")
+	batched := flag.Bool("batched", false, "Use batched Ollama for summarization")
+
 	geminiAPIKey := flag.String("gemini-api-key", "", "Google Gemini API key")
-	useOllama := flag.Bool("use-ollama", false, "Use Ollama for summarization")
-	useBatchedOllama := flag.Bool("use-batched-ollama", false, "Use batched Ollama for summarization")
-	ollamaModel := flag.String("ollama-model", "qwen3:32b", "Ollama model to use")
 	repoPath := flag.String("repo", ".", "path to the git repository")
 	startDate := flag.String("start-date", "", "optional start date in YYYY-MM-DD format")
 	endDate := flag.String("end-date", "", "optional end date in YYYY-MM-DD format")
@@ -31,9 +32,9 @@ func main() {
 		"startDate", *startDate,
 		"endDate", *endDate,
 		"author", *author,
-		"useOllama", *useOllama,
-		"useBatchedOllama", *useBatchedOllama,
-		"ollamaModel", *ollamaModel,
+		"summarize", *summarize,
+		"model", *model,
+		"batched", *batched,
 	)
 
 	apiKey := os.Getenv("GEMINI_API_KEY")
@@ -42,10 +43,10 @@ func main() {
 	}
 
 	summarizerClient, err := summarizer.New(summarizer.Config{
-		UseOllama:        *useOllama,
-		UseBatchedOllama: *useBatchedOllama,
-		OllamaModel:      *ollamaModel,
-		GeminiAPIKey:     apiKey,
+		Summarize:    *summarize,
+		Batched:      *batched,
+		Model:        *model,
+		GeminiAPIKey: apiKey,
 	})
 	if err != nil {
 		slog.Error("failed to create summarizer", "err", err)
@@ -61,17 +62,19 @@ func main() {
 	dailySummaries := report.AggregateByDay(commits)
 	slog.Info("generated daily summaries", "count", len(dailySummaries))
 
-	for i := range dailySummaries {
-		slog.Debug("generating summary", "date", dailySummaries[i].Date.Format("2006-01-02"))
+	if *summarize {
+		for i := range dailySummaries {
+			slog.Debug("generating summary", "date", dailySummaries[i].Date.Format("2006-01-02"))
 
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-		defer cancel()
-		summary, err := summarizerClient.Summarize(ctx, dailySummaries[i].Commits)
-		if err != nil {
-			slog.Error("failed to generate summary", "err", err)
-			continue
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+			summary, err := summarizerClient.Summarize(ctx, dailySummaries[i].Commits)
+			if err != nil {
+				slog.Error("failed to generate summary", "err", err)
+				continue
+			}
+			dailySummaries[i].Summary = summary
 		}
-		dailySummaries[i].Summary = summary
 	}
 
 	report.CalculateEffort(dailySummaries)
