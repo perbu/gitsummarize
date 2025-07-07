@@ -50,7 +50,7 @@ func (s *OllamaSummarizer) Summarize(ctx context.Context, commits []git.Commit) 
 	for _, commit := range commits {
 		commitMessages = append(commitMessages, commit.Message)
 	}
-	prompt := fmt.Sprintf("Summarize the following git commits in a single sentence, from the perspective of a tech lead reporting to management:\n\nCommits:\n%s", strings.Join(commitMessages, "\n---\n"))
+	prompt := fmt.Sprintf("Summarize the following git commits in a single sentence. No yapping. :\n\nCommits:\n%s", strings.Join(commitMessages, "\n---\n"))
 
 	slog.Debug("Ollama API request", "promptLength", len(prompt), "model", s.model)
 

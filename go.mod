@@ -1,4 +1,4 @@
-module gitsummerize
+module github.com/perbu/gitsummerize
 
 go 1.24.4
 

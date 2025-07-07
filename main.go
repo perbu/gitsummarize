@@ -17,7 +17,7 @@ func main() {
 	slog.SetDefault(logger)
 
 	summarize := flag.Bool("summarize", false, "Enable summarization")
-	model := flag.String("model", "gemini-1.5-flash", "Model to use for summarization")
+	model := flag.String("model", "gemini-2.5-flash", "Model to use for summarization")
 	batched := flag.Bool("batched", false, "Use batched Ollama for summarization")
 
 	geminiAPIKey := flag.String("gemini-api-key", "", "Google Gemini API key")
