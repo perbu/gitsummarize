@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"gitsummerize/git"
+	"github.com/perbu/gitsummarize/git"
 	"log/slog"
 	"net/http"
 	"net/url"

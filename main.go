@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"gitsummerize/git"
-	"gitsummerize/report"
-	"gitsummerize/summarizer"
+	"github.com/perbu/gitsummarize/git"
+	"github.com/perbu/gitsummarize/report"
+	"github.com/perbu/gitsummarize/summarizer"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	author := flag.String("author", "", "optional author email to filter commits")
 	flag.Parse()
 
-	slog.Info("starting gitsummerize",
+	slog.Info("starting gitsummarize",
 		"repo", *repoPath,
 		"startDate", *startDate,
 		"endDate", *endDate,
@@ -84,5 +84,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Info("gitsummerize finished successfully")
+	slog.Info("gitsummarize finished successfully")
 }

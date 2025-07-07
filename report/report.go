@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"gitsummerize/git"
+	"github.com/perbu/gitsummarize/git"
 )
 
 // DailySummary represents the summary of a single day
@@ -69,7 +69,7 @@ func WriteCSV(summaries []DailySummary, w io.Writer) error {
 	writer := csv.NewWriter(w)
 	defer writer.Flush()
 
-	header := []string{"date", "effort", "no of commits", "commit SHAs", "lines added", "lines deleted", "summary"}
+	header := []string{"date", "effort", "no of commits", "lines added", "lines deleted", "commit SHAs", "summary"}
 	if err := writer.Write(header); err != nil {
 		return err
 	}
@@ -84,9 +84,9 @@ func WriteCSV(summaries []DailySummary, w io.Writer) error {
 			summary.Date.Format("2006-01-02"),
 			strconv.FormatFloat(summary.Effort, 'f', 2, 64),
 			strconv.Itoa(summary.CommitCount),
-			strings.Join(commitSHAs, " "),
 			strconv.Itoa(summary.LinesAdded),
 			strconv.Itoa(summary.LinesDeleted),
+			strings.Join(commitSHAs, " "),
 			summary.Summary,
 		}
 		if err := writer.Write(record); err != nil {

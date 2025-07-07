@@ -2,7 +2,7 @@ package summarizer
 
 import (
 	"context"
-	"gitsummerize/git"
+	"github.com/perbu/gitsummarize/git"
 )
 
 type Summarizer interface {

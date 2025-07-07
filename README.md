@@ -1,6 +1,6 @@
-# gitsummerize
+# gitsummarize
 
-`gitsummerize` is a command-line tool written in Go that summarizes git commits from a specified repository. It can aggregate commits by day and generate a concise summary for each day using either the Google Gemini API or a local Ollama instance. The output is a CSV file containing daily summaries, including commit counts, lines changed, and an AI-generated summary.
+`gitsummarize` is a command-line tool written in Go that summarizes git commits from a specified repository. It can aggregate commits by day and generate a concise summary for each day using either the Google Gemini API or a local Ollama instance. The output is a CSV file containing daily summaries, including commit counts, lines changed, and an AI-generated summary.
 
 ## Features
 
@@ -12,20 +12,20 @@
 
 ## Installation
 
-To build `gitsummerize` from source, you need Go installed (version 1.18 or higher).
+To build `gitsummarize` from source, you need Go installed (version 1.18 or higher).
 
 ```bash
-git clone https://github.com/perbu/gitsummerize.git
-cd gitsummerize
-go build -o gitsummerize .
+git clone https://github.com/perbu/gitsummarize.git
+cd gitsummarize
+go build -o gitsummarize .
 ```
 
-This will create an executable named `gitsummerize` in the current directory.
+This will create an executable named `gitsummarize` in the current directory.
 
 ## Usage
 
 ```bash
-./gitsummerize [flags]
+./gitsummarize [flags]
 ```
 
 ### Flags
@@ -43,19 +43,19 @@ This will create an executable named `gitsummerize` in the current directory.
 **Summarize commits in the current repository using Gemini:**
 
 ```bash
-./gitsummerize --gemini-api-key YOUR_GEMINI_API_KEY
+./gitsummarize --gemini-api-key YOUR_GEMINI_API_KEY
 ```
 
 **Summarize commits in a specific repository using Ollama:**
 
 ```bash
-./gitsummerize --repo /path/to/your/repo --use-ollama --ollama-model llama3
+./gitsummarize --repo /path/to/your/repo --use-ollama --ollama-model llama3
 ```
 
 **Summarize commits by a specific author within a date range:**
 
 ```bash
-./gitsummerize --gemini-api-key YOUR_GEMINI_API_KEY --repo /path/to/your/repo --author "john.doe@example.com" --start-date "2024-01-01" --end-date "2024-01-31"
+./gitsummarize --gemini-api-key YOUR_GEMINI_API_KEY --repo /path/to/your/repo --author "john.doe@example.com" --start-date "2024-01-01" --end-date "2024-01-31"
 ```
 
 ## Output
@@ -73,7 +73,7 @@ The tool outputs a CSV report to standard output (stdout) with the following col
 You can redirect the output to a file:
 
 ```bash
-./gitsummerize --gemini-api-key YOUR_GEMINI_API_KEY > daily_report.csv
+./gitsummarize --gemini-api-key YOUR_GEMINI_API_KEY > daily_report.csv
 ```
 
 ## Configuration
