@@ -1,7 +1,10 @@
 package summarizer
 
-import "context"
+import (
+	"context"
+	"gitsummerize/git"
+)
 
 type Summarizer interface {
-	Summarize(ctx context.Context, commitMessages, diffs string) (string, error)
+	Summarize(ctx context.Context, commits []git.Commit) (string, error)
 }

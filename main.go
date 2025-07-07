@@ -5,7 +5,6 @@ import (
 	"flag"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 
 	"gitsummerize/git"
@@ -14,12 +13,13 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	slog.SetDefault(logger)
 
 	geminiAPIKey := flag.String("gemini-api-key", "", "Google Gemini API key")
 	useOllama := flag.Bool("use-ollama", false, "Use Ollama for summarization")
-	ollamaModel := flag.String("ollama-model", "qwen3:14b", "Ollama model to use")
+	useBatchedOllama := flag.Bool("use-batched-ollama", false, "Use batched Ollama for summarization")
+	ollamaModel := flag.String("ollama-model", "qwen3:32b", "Ollama model to use")
 	repoPath := flag.String("repo", ".", "path to the git repository")
 	startDate := flag.String("start-date", "", "optional start date in YYYY-MM-DD format")
 	endDate := flag.String("end-date", "", "optional end date in YYYY-MM-DD format")
@@ -32,6 +32,7 @@ func main() {
 		"endDate", *endDate,
 		"author", *author,
 		"useOllama", *useOllama,
+		"useBatchedOllama", *useBatchedOllama,
 		"ollamaModel", *ollamaModel,
 	)
 
@@ -41,9 +42,10 @@ func main() {
 	}
 
 	summarizerClient, err := summarizer.New(summarizer.Config{
-		UseOllama:    *useOllama,
-		OllamaModel:  *ollamaModel,
-		GeminiAPIKey: apiKey,
+		UseOllama:        *useOllama,
+		UseBatchedOllama: *useBatchedOllama,
+		OllamaModel:      *ollamaModel,
+		GeminiAPIKey:     apiKey,
 	})
 	if err != nil {
 		slog.Error("failed to create summarizer", "err", err)
@@ -61,16 +63,10 @@ func main() {
 
 	for i := range dailySummaries {
 		slog.Debug("generating summary", "date", dailySummaries[i].Date.Format("2006-01-02"))
-		var commitMessages []string
-		var diffs []string
-		for _, commit := range dailySummaries[i].Commits {
-			commitMessages = append(commitMessages, commit.Message)
-			diffs = append(diffs, commit.Diff)
-		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
-		summary, err := summarizerClient.Summarize(ctx, strings.Join(commitMessages, "\n"), strings.Join(diffs, "\n"))
+		summary, err := summarizerClient.Summarize(ctx, dailySummaries[i].Commits)
 		if err != nil {
 			slog.Error("failed to generate summary", "err", err)
 			continue
